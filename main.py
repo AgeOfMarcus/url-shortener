@@ -27,6 +27,12 @@ def shorten_url():
 	if not 'url' in request.args:
 		return "", 200
 	url = request.args['url']
+	try:
+		exist = fix_sql(sql("SELECT ID FROM urls WHERE URL='%s'" % url))
+		if url in exist:
+			return host + exist[0], 200
+	except Exception as e:
+		print("\n\nError checking if url exists: " + str(e) + "\n\n")
 	id = ''.join(str(uuid.uuid4()).split("-"))
 	short = ''
 	while short == '' or short in fix_sql(sql("SELECT ID FROM urls")):
@@ -39,7 +45,10 @@ def shorten_url():
 
 @app.route("/<id>",methods=['GET'])
 def redir(id):
-	url = sql("SELECT URL FROM urls WHERE ID='%s'" % id)[0][0]
+	try:
+		url = sql("SELECT URL FROM urls WHERE ID='%s'" % id)[0][0]
+	except:
+		url = host
 	return redirect(url)
 
 def main():
